@@ -1,0 +1,80 @@
+:root {
+    --color-primario: #9c5217;
+    --color-primario-oscuro: #7a3f10;
+    --color-fondo: #faf6f1;
+    --color-suave: #faf0e4;
+}
+
+body {
+    background-color: var(--color-fondo);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+.barra-principal {
+    background: linear-gradient(90deg, var(--color-primario-oscuro), var(--color-primario));
+}
+
+.barra-principal .nav-link.active {
+    font-weight: 600;
+    border-bottom: 2px solid #fff;
+}
+
+.btn-primario {
+    background-color: var(--color-primario);
+    border-color: var(--color-primario);
+    color: #fff;
+}
+
+.btn-primario:hover,
+.btn-primario:focus {
+    background-color: var(--color-primario-oscuro);
+    border-color: var(--color-primario-oscuro);
+    color: #fff;
+}
+
+.tarjeta {
+    border: none;
+    border-radius: .75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+}
+
+.tarjeta-indicador .valor {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-primario);
+}
+
+.tabla thead th {
+    background-color: var(--color-suave);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.saldo-puntos {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-primario);
+}
+
+.comprobante {
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.pie {
+    border-top: 1px solid #eadfd3;
+}
+
+@media print {
+    .barra-principal,
+    .pie,
+    .no-imprimir {
+        display: none !important;
+    }
+}

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/plantilla :: cabecera('Fidelización')}"></head>
+<body>
+<nav th:replace="~{fragmentos/plantilla :: navegacion('fidelizacion')}"></nav>
+<main class="container">
+    <div th:replace="~{fragmentos/plantilla :: mensajes}"></div>
+
+    <h1 class="h3 mb-3">Programa de fidelización</h1>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-5">
+            <div class="card tarjeta p-4 h-100">
+                <h2 class="h5 mb-3">Canjear recompensa</h2>
+                <form th:action="@{/fidelizacion}" method="get" class="mb-3">
+                    <label class="form-label" for="buscarIdentificador">Identificador del cliente</label>
+                    <div class="input-group">
+                        <input class="form-control" id="buscarIdentificador" name="identificador"
+                               th:value="${formulario.identificadorCliente}" placeholder="CLI-1001" required>
+                        <button class="btn btn-outline-secondary" type="submit">Consultar saldo</button>
+                    </div>
+                </form>
+
+                <div th:if="${cliente != null}" class="border rounded p-3 mb-3 text-center">
+                    <div class="fw-semibold" th:text="${cliente.nombre}"></div>
+                    <div class="saldo-puntos" th:text="${cliente.puntos} + ' pts'"></div>
+                    <span class="badge" th:classappend="${cliente.activo} ? 'text-bg-success' : 'text-bg-secondary'"
+                          th:text="${cliente.activo} ? 'Activo' : 'Inactivo'"></span>
+                </div>
+
+                <form th:action="@{/fidelizacion/canjear}" th:object="${formulario}" method="post" novalidate>
+                    <input type="hidden" th:field="*{identificadorCliente}">
+                    <div class="mb-3">
+                        <label class="form-label" for="recompensaId">Recompensa</label>
+                        <select class="form-select" id="recompensaId" th:field="*{recompensaId}"
+                                th:classappend="${#fields.hasErrors('recompensaId')} ? 'is-invalid'">
+                            <option value="">Seleccione...</option>
+                            <option th:each="recompensa : ${recompensas}" th:if="${recompensa.activa}" th:value="${recompensa.id}"
+                                    th:text="${recompensa.nombre} + ' · ' + ${recompensa.puntosRequeridos} + ' pts'"
+                                    th:disabled="${cliente != null and !cliente.tieneSaldo(recompensa.puntosRequeridos)}"></option>
+                        </select>
+                        <div class="invalid-feedback" th:errors="*{recompensaId}"></div>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('identificadorCliente')}" th:errors="*{identificadorCliente}"></div>
+                    </div>
+                    <button class="btn btn-primario w-100" type="submit"
+                            th:disabled="${formulario.identificadorCliente == null or formulario.identificadorCliente.isBlank()}">Canjear</button>
+                </form>
+                <p class="small text-muted mt-3 mb-0">El canje requiere cliente activo, saldo suficiente, recompensa activa y unidades disponibles. No genera puntos adicionales.</p>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card tarjeta p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="h5 mb-0">Catálogo de recompensas</h2>
+                    <a class="btn btn-sm btn-primario" th:href="@{/fidelizacion/recompensas/nueva}">+ Recompensa</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table tabla align-middle mb-0">
+                        <thead><tr><th>Recompensa</th><th>Producto</th><th class="text-end">Puntos</th><th>Disponible</th><th>Estado</th><th></th></tr></thead>
+                        <tbody>
+                        <tr th:each="recompensa : ${recompensas}">
+                            <td>
+                                <div class="fw-semibold" th:text="${recompensa.nombre}"></div>
+                                <div class="small text-muted" th:text="${recompensa.descripcion}"></div>
+                            </td>
+                            <td th:text="${recompensa.producto != null} ? ${recompensa.producto.nombre} : '—'"></td>
+                            <td class="text-end fw-bold" th:text="${recompensa.puntosRequeridos}"></td>
+                            <td>
+                                <span class="badge" th:classappend="${recompensa.estaDisponible()} ? 'text-bg-success' : 'text-bg-danger'"
+                                      th:text="${recompensa.estaDisponible()} ? 'Sí' : 'No'"></span>
+                            </td>
+                            <td>
+                                <span class="badge" th:classappend="${recompensa.activa} ? 'text-bg-success' : 'text-bg-secondary'"
+                                      th:text="${recompensa.activa} ? 'Activa' : 'Inactiva'"></span>
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <a class="btn btn-sm btn-outline-primary" th:href="@{/fidelizacion/recompensas/{id}/editar(id=${recompensa.id})}">Editar</a>
+                                <form class="d-inline" th:action="@{/fidelizacion/recompensas/{id}/estado(id=${recompensa.id},activa=${!recompensa.activa})}" method="post">
+                                    <button class="btn btn-sm" type="submit"
+                                            th:classappend="${recompensa.activa} ? 'btn-outline-warning' : 'btn-outline-success'"
+                                            th:text="${recompensa.activa} ? 'Desactivar' : 'Activar'"></button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="small text-muted mt-3 mb-0">Acumulación: P = (S × 2) + (M × 8), donde S son sándwiches individuales y M menús completos pagados.</p>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragmentos/plantilla :: pie}"></footer>
+<th:block th:replace="~{fragmentos/plantilla :: scripts}"></th:block>
+</body>
+</html>

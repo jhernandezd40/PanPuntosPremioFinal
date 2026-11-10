@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/plantilla :: cabecera('Error')}"></head>
+<body>
+<nav th:replace="~{fragmentos/plantilla :: navegacion('')}"></nav>
+<main class="container">
+    <div class="card tarjeta p-5 text-center">
+        <h1 class="h3 mb-3" th:text="${titulo} ?: (${status == 404} ? 'Página no encontrada' : 'Error inesperado')">Error</h1>
+        <p class="text-muted" th:text="${mensaje} ?: (${status == 404} ? 'La página solicitada no existe' : 'Ocurrió un error al procesar la solicitud')"></p>
+        <div>
+            <a class="btn btn-primario" th:href="@{/}">Volver al inicio</a>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragmentos/plantilla :: pie}"></footer>
+<th:block th:replace="~{fragmentos/plantilla :: scripts}"></th:block>
+</body>
+</html>

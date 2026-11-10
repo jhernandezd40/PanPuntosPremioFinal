@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/plantilla :: cabecera('Inventario')}"></head>
+<body>
+<nav th:replace="~{fragmentos/plantilla :: navegacion('inventario')}"></nav>
+<main class="container">
+    <div th:replace="~{fragmentos/plantilla :: mensajes}"></div>
+
+    <h1 class="h3 mb-3">Abastecimiento de inventario</h1>
+
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="card tarjeta p-4">
+                <h2 class="h5 mb-3">Ingresar unidades</h2>
+                <form th:action="@{/inventario/abastecer}" th:object="${formulario}" method="post" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label" for="productoId">Producto *</label>
+                        <select class="form-select" id="productoId" th:field="*{productoId}"
+                                th:classappend="${#fields.hasErrors('productoId')} ? 'is-invalid'">
+                            <option value="">Seleccione...</option>
+                            <option th:each="producto : ${productos}" th:value="${producto.id}"
+                                    th:text="${producto.codigo} + ' · ' + ${producto.nombre} + ' (' + ${producto.existencia} + ' u.)'"></option>
+                        </select>
+                        <div class="invalid-feedback" th:errors="*{productoId}"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="cantidad">Cantidad *</label>
+                        <input type="number" min="1" class="form-control" id="cantidad" th:field="*{cantidad}"
+                               th:classappend="${#fields.hasErrors('cantidad')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:errors="*{cantidad}"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="referencia">Referencia</label>
+                        <input class="form-control" id="referencia" th:field="*{referencia}" placeholder="Factura proveedor, lote...">
+                        <div class="invalid-feedback" th:errors="*{referencia}"></div>
+                    </div>
+                    <button class="btn btn-primario w-100" type="submit">Registrar entrada</button>
+                </form>
+                <p class="small text-muted mt-3 mb-0">Los menús no manejan existencia propia: se abastecen sus componentes.</p>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card tarjeta p-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+                    <h2 class="h5 mb-0">Historial de movimientos</h2>
+                    <form class="d-flex gap-2" th:action="@{/inventario}" method="get">
+                        <select class="form-select form-select-sm" name="productoId" onchange="this.form.submit()">
+                            <option value="">Todos los productos</option>
+                            <option th:each="producto : ${productos}" th:value="${producto.id}" th:text="${producto.nombre}"
+                                    th:selected="${producto.id == productoFiltro}"></option>
+                        </select>
+                    </form>
+                </div>
+                <div class="table-responsive">
+                    <table class="table tabla table-sm align-middle mb-0">
+                        <thead><tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th class="text-end">Cantidad</th><th class="text-end">Existencia</th><th>Referencia</th></tr></thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(movimientos)}"><td colspan="6" class="text-center text-muted py-3">Sin movimientos</td></tr>
+                        <tr th:each="movimiento : ${movimientos}">
+                            <td class="text-nowrap" th:text="${#temporals.format(movimiento.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td><span class="fw-semibold" th:text="${movimiento.productoCodigo}"></span> <span th:text="${movimiento.productoNombre}"></span></td>
+                            <td><span class="badge" th:classappend="'text-bg-' + ${movimiento.tipo.estilo}" th:text="${movimiento.tipo.descripcion}"></span></td>
+                            <td class="text-end fw-semibold" th:text="${movimiento.cantidadConSigno > 0} ? '+' + ${movimiento.cantidadConSigno} : ${movimiento.cantidadConSigno}"></td>
+                            <td class="text-end" th:text="${movimiento.existenciaResultante}"></td>
+                            <td th:text="${movimiento.referencia}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragmentos/plantilla :: pie}"></footer>
+<th:block th:replace="~{fragmentos/plantilla :: scripts}"></th:block>
+</body>
+</html>

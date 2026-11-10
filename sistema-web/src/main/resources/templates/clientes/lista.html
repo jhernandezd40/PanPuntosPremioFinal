@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/plantilla :: cabecera('Clientes')}"></head>
+<body>
+<nav th:replace="~{fragmentos/plantilla :: navegacion('clientes')}"></nav>
+<main class="container">
+    <div th:replace="~{fragmentos/plantilla :: mensajes}"></div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <h1 class="h3 mb-0">Clientes</h1>
+        <a class="btn btn-primario" th:href="@{/clientes/nuevo}">+ Registrar cliente</a>
+    </div>
+
+    <form class="row g-2 mb-3" th:action="@{/clientes}" method="get">
+        <div class="col-md-6">
+            <input type="search" class="form-control" name="q" th:value="${q}" placeholder="Buscar por identificador o nombre">
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+        </div>
+    </form>
+
+    <div class="card tarjeta">
+        <div class="table-responsive">
+            <table class="table tabla table-hover align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>Identificador</th>
+                    <th>Nombre</th>
+                    <th>Teléfono</th>
+                    <th>Correo</th>
+                    <th class="text-end">Puntos</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(clientes)}">
+                    <td colspan="7" class="text-center text-muted py-4">No se encontraron clientes</td>
+                </tr>
+                <tr th:each="cliente : ${clientes}">
+                    <td class="fw-semibold" th:text="${cliente.identificador}"></td>
+                    <td th:text="${cliente.nombre}"></td>
+                    <td th:text="${cliente.telefono}"></td>
+                    <td th:text="${cliente.correo}"></td>
+                    <td class="text-end fw-bold" th:text="${cliente.puntos}"></td>
+                    <td>
+                        <span class="badge" th:classappend="${cliente.activo} ? 'text-bg-success' : 'text-bg-secondary'"
+                              th:text="${cliente.activo} ? 'Activo' : 'Inactivo'"></span>
+                    </td>
+                    <td class="text-end text-nowrap">
+                        <a class="btn btn-sm btn-outline-secondary" th:href="@{/clientes/{id}(id=${cliente.id})}">Ver</a>
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/clientes/{id}/editar(id=${cliente.id})}">Editar</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragmentos/plantilla :: pie}"></footer>
+<th:block th:replace="~{fragmentos/plantilla :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/plantilla :: cabecera('Comprobante #' + ${pedido.id})}"></head>
+<body>
+<nav th:replace="~{fragmentos/plantilla :: navegacion('pedidos')}"></nav>
+<main class="container">
+    <div th:replace="~{fragmentos/plantilla :: mensajes}"></div>
+
+    <div class="comprobante card tarjeta p-4">
+        <div class="text-center mb-3">
+            <h1 class="h4 mb-0">🥪 Pan, Puntos y Premios</h1>
+            <div class="text-muted">Comprobante de pago</div>
+        </div>
+        <dl class="row small mb-3">
+            <dt class="col-5">Pedido</dt><dd class="col-7" th:text="'#' + ${pedido.id}"></dd>
+            <dt class="col-5">Cliente</dt><dd class="col-7" th:text="${pedido.nombreCliente}"></dd>
+            <th:block th:if="${pedido.tieneCliente()}">
+                <dt class="col-5">Identificador</dt><dd class="col-7" th:text="${pedido.cliente.identificador}"></dd>
+            </th:block>
+            <dt class="col-5">Fecha de pago</dt><dd class="col-7" th:text="${#temporals.format(pago.fecha, 'dd/MM/yyyy HH:mm')}"></dd>
+            <dt class="col-5">Método</dt><dd class="col-7" th:text="${pago.descripcionMetodo}"></dd>
+            <dt class="col-5">Detalle</dt><dd class="col-7" th:text="${pago.detalle}"></dd>
+        </dl>
+        <table class="table table-sm">
+            <thead><tr><th>Producto</th><th class="text-end">Cant.</th><th class="text-end">Subtotal</th></tr></thead>
+            <tbody>
+            <tr th:each="detalle : ${pedido.detalles}">
+                <td th:text="${detalle.producto.nombre}"></td>
+                <td class="text-end" th:text="${detalle.cantidad}"></td>
+                <td class="text-end" th:text="'Q ' + ${#numbers.formatDecimal(detalle.subtotal, 1, 'COMMA', 2, 'POINT')}"></td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr class="fw-bold"><td colspan="2" class="text-end">Total pagado</td>
+                <td class="text-end" th:text="'Q ' + ${#numbers.formatDecimal(pago.monto, 1, 'COMMA', 2, 'POINT')}"></td></tr>
+            <tr><td colspan="2" class="text-end">Puntos acreditados</td><td class="text-end" th:text="${pedido.puntosOtorgados}"></td></tr>
+            </tfoot>
+        </table>
+        <p class="text-center text-muted mb-0">¡Gracias por su compra!</p>
+    </div>
+
+    <div class="comprobante d-flex justify-content-center gap-2 mt-3 no-imprimir">
+        <a class="btn btn-primario" th:href="@{/pedidos/{id}/comprobante/pdf(id=${pedido.id})}" target="_blank">Descargar PDF</a>
+        <button class="btn btn-outline-secondary" type="button" onclick="window.print()">Imprimir</button>
+        <a class="btn btn-outline-secondary" th:href="@{/pedidos/{id}(id=${pedido.id})}">Volver al pedido</a>
+    </div>
+</main>
+<footer th:replace="~{fragmentos/plantilla :: pie}"></footer>
+<th:block th:replace="~{fragmentos/plantilla :: scripts}"></th:block>
+</body>
+</html>

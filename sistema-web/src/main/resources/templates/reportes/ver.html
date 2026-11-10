@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/plantilla :: cabecera(${reporte.titulo()})}"></head>
+<body>
+<nav th:replace="~{fragmentos/plantilla :: navegacion('reportes')}"></nav>
+<main class="container">
+    <div th:replace="~{fragmentos/plantilla :: mensajes}"></div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start mb-3 gap-2">
+        <div>
+            <a class="small" th:href="@{/reportes}">← Reportes</a>
+            <h1 class="h3 mb-0" th:text="${tabla.titulo}"></h1>
+            <span class="text-muted" th:text="${tabla.subtitulo}"></span>
+        </div>
+        <a class="btn btn-primario"
+           th:href="${reporte.usaPeriodo()} ? @{/reportes/{clave}/pdf(clave=${reporte.clave()},desde=${filtro.desde},hasta=${filtro.hasta})} : @{/reportes/{clave}/pdf(clave=${reporte.clave()})}">Exportar PDF</a>
+    </div>
+
+    <form class="row g-2 align-items-end mb-3" th:if="${reporte.usaPeriodo()}"
+          th:action="@{/reportes/{clave}(clave=${reporte.clave()})}" method="get">
+        <div class="col-auto">
+            <label class="form-label small" for="desde">Desde</label>
+            <input type="date" class="form-control" id="desde" name="desde" th:value="${filtro.desde}">
+        </div>
+        <div class="col-auto">
+            <label class="form-label small" for="hasta">Hasta</label>
+            <input type="date" class="form-control" id="hasta" name="hasta" th:value="${filtro.hasta}">
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-secondary" type="submit">Aplicar</button>
+        </div>
+    </form>
+
+    <div class="card tarjeta mb-3">
+        <div class="table-responsive">
+            <table class="table tabla table-hover align-middle mb-0">
+                <thead><tr><th th:each="columna : ${tabla.columnas}" th:text="${columna}"></th></tr></thead>
+                <tbody>
+                <tr th:if="${tabla.estaVacia()}">
+                    <td th:colspan="${#lists.size(tabla.columnas)}" class="text-center text-muted py-4">No hay datos para los criterios seleccionados</td>
+                </tr>
+                <tr th:each="fila : ${tabla.filas}">
+                    <td th:each="valor : ${fila}" th:text="${valor}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row justify-content-end" th:unless="${#maps.isEmpty(tabla.resumen)}">
+        <div class="col-md-6 col-lg-4">
+            <div class="card tarjeta p-3">
+                <div class="d-flex justify-content-between py-1 border-bottom" th:each="dato : ${tabla.resumen}">
+                    <span th:text="${dato.key}"></span>
+                    <strong th:text="${dato.value}"></strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragmentos/plantilla :: pie}"></footer>
+<th:block th:replace="~{fragmentos/plantilla :: scripts}"></th:block>
+</body>
+</html>

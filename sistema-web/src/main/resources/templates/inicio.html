@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/plantilla :: cabecera('Inicio')}"></head>
+<body>
+<nav th:replace="~{fragmentos/plantilla :: navegacion('inicio')}"></nav>
+<main class="container">
+    <div th:replace="~{fragmentos/plantilla :: mensajes}"></div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <h1 class="h3 mb-0">Panel principal</h1>
+        <div class="d-flex gap-2">
+            <a class="btn btn-primario" th:href="@{/pedidos/nuevo}">+ Nuevo pedido</a>
+            <a class="btn btn-outline-secondary" th:href="@{/fidelizacion}">Canjear puntos</a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card tarjeta tarjeta-indicador p-3">
+                <span class="text-muted small">Ventas de hoy</span>
+                <span class="valor" th:text="'Q ' + ${#numbers.formatDecimal(ventasHoy, 1, 'COMMA', 2, 'POINT')}">Q 0.00</span>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <a class="text-decoration-none" th:href="@{/pedidos(estado='PENDIENTE')}">
+                <div class="card tarjeta tarjeta-indicador p-3">
+                    <span class="text-muted small">Pedidos pendientes</span>
+                    <span class="valor" th:text="${pedidosPendientes}">0</span>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-lg-3">
+            <a class="text-decoration-none" th:href="@{/pedidos(estado='PAGADO')}">
+                <div class="card tarjeta tarjeta-indicador p-3">
+                    <span class="text-muted small">Pagados por entregar</span>
+                    <span class="valor" th:text="${pedidosPorEntregar}">0</span>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-lg-3">
+            <a class="text-decoration-none" th:href="@{/clientes}">
+                <div class="card tarjeta tarjeta-indicador p-3">
+                    <span class="text-muted small">Clientes activos</span>
+                    <span class="valor" th:text="${clientesActivos}">0</span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="card tarjeta p-3 h-100">
+                <h2 class="h5">Pedidos pendientes de cobro</h2>
+                <div th:if="${#lists.isEmpty(pedidosRecientes)}" class="text-muted">No hay pedidos pendientes.</div>
+                <div class="table-responsive" th:unless="${#lists.isEmpty(pedidosRecientes)}">
+                    <table class="table tabla table-hover align-middle mb-0">
+                        <thead><tr><th>#</th><th>Cliente</th><th>Fecha</th><th class="text-end">Total</th><th></th></tr></thead>
+                        <tbody>
+                        <tr th:each="pedido : ${pedidosRecientes}">
+                            <td th:text="${pedido.id}"></td>
+                            <td th:text="${pedido.nombreCliente}"></td>
+                            <td th:text="${#temporals.format(pedido.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td class="text-end" th:text="'Q ' + ${#numbers.formatDecimal(pedido.total, 1, 'COMMA', 2, 'POINT')}"></td>
+                            <td class="text-end"><a class="btn btn-sm btn-primario" th:href="@{/pedidos/{id}(id=${pedido.id})}">Cobrar</a></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card tarjeta p-3 h-100">
+                <h2 class="h5">Alertas de inventario</h2>
+                <div th:if="${existenciaBaja.estaVacia()}" class="text-muted">Todos los productos tienen existencia suficiente.</div>
+                <ul class="list-group list-group-flush" th:unless="${existenciaBaja.estaVacia()}">
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0"
+                        th:each="fila : ${existenciaBaja.filas}">
+                        <span><strong th:text="${fila[0]}"></strong> · <span th:text="${fila[1]}"></span></span>
+                        <span class="badge" th:classappend="${fila[3] == '0'} ? 'text-bg-danger' : 'text-bg-warning'"
+                              th:text="${fila[3]} + ' u.'"></span>
+                    </li>
+                </ul>
+                <a class="btn btn-sm btn-outline-secondary mt-3 align-self-start" th:href="@{/inventario}">Abastecer inventario</a>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragmentos/plantilla :: pie}"></footer>
+<th:block th:replace="~{fragmentos/plantilla :: scripts}"></th:block>
+</body>
+</html>

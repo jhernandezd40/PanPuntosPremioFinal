@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/plantilla :: cabecera('Pedido #' + ${pedido.id})}"></head>
+<body>
+<nav th:replace="~{fragmentos/plantilla :: navegacion('pedidos')}"></nav>
+<main class="container">
+    <div th:replace="~{fragmentos/plantilla :: mensajes}"></div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start mb-3 gap-2">
+        <div>
+            <h1 class="h3 mb-1">Pedido #<span th:text="${pedido.id}"></span></h1>
+            <span class="badge fs-6" th:classappend="'text-bg-' + ${pedido.estado.estilo}" th:text="${pedido.estado.descripcion}"></span>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-secondary" th:if="${pago != null}" th:href="@{/pedidos/{id}/comprobante(id=${pedido.id})}">Ver comprobante</a>
+            <form th:if="${pedido.puedeEntregarse()}" th:action="@{/pedidos/{id}/entregar(id=${pedido.id})}" method="post">
+                <button class="btn btn-success" type="submit">Marcar como entregado</button>
+            </form>
+            <form th:if="${pedido.puedeAnularse()}" th:action="@{/pedidos/{id}/anular(id=${pedido.id})}" method="post"
+                  onsubmit="return confirm('¿Anular el pedido? No afectará inventario ni puntos.');">
+                <button class="btn btn-outline-danger" type="submit">Anular pedido</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="card tarjeta p-3 mb-3">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Cliente</dt>
+                    <dd class="col-sm-8">
+                        <a th:if="${pedido.tieneCliente()}" th:href="@{/clientes/{id}(id=${pedido.cliente.id})}"
+                           th:text="${pedido.cliente.identificador} + ' · ' + ${pedido.cliente.nombre}"></a>
+                        <span th:unless="${pedido.tieneCliente()}">Consumidor final</span>
+                    </dd>
+                    <dt class="col-sm-4">Creado</dt>
+                    <dd class="col-sm-8" th:text="${#temporals.format(pedido.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></dd>
+                    <th:block th:if="${pedido.fechaPago != null}">
+                        <dt class="col-sm-4">Pagado</dt>
+                        <dd class="col-sm-8" th:text="${#temporals.format(pedido.fechaPago, 'dd/MM/yyyy HH:mm')}"></dd>
+                    </th:block>
+                    <th:block th:if="${pedido.fechaEntrega != null}">
+                        <dt class="col-sm-4">Entregado</dt>
+                        <dd class="col-sm-8" th:text="${#temporals.format(pedido.fechaEntrega, 'dd/MM/yyyy HH:mm')}"></dd>
+                    </th:block>
+                    <th:block th:if="${pedido.fechaAnulacion != null}">
+                        <dt class="col-sm-4">Anulado</dt>
+                        <dd class="col-sm-8" th:text="${#temporals.format(pedido.fechaAnulacion, 'dd/MM/yyyy HH:mm')}"></dd>
+                    </th:block>
+                    <th:block th:if="${pago != null}">
+                        <dt class="col-sm-4">Pago</dt>
+                        <dd class="col-sm-8" th:text="${pago.descripcionMetodo} + ' · ' + ${pago.detalle}"></dd>
+                    </th:block>
+                </dl>
+            </div>
+            <div class="card tarjeta">
+                <div class="table-responsive">
+                    <table class="table tabla align-middle mb-0">
+                        <thead><tr><th>Producto</th><th class="text-end">Cant.</th><th class="text-end">Precio</th><th class="text-end">Subtotal</th><th class="text-end">Puntos</th></tr></thead>
+                        <tbody>
+                        <tr th:each="detalle : ${pedido.detalles}">
+                            <td>
+                                <span th:text="${detalle.producto.nombre}"></span>
+                                <span class="badge text-bg-light" th:text="${detalle.producto.descripcionCategoria}"></span>
+                                <div class="small text-muted" th:if="${detalle.producto.categoria.name() == 'MENU'}">
+                                    Incluye: <span th:each="componente, estado : ${detalle.producto.componentes}"
+                                                   th:text="${componente.nombre} + (${estado.last} ? '' : ', ')"></span>
+                                </div>
+                            </td>
+                            <td class="text-end" th:text="${detalle.cantidad}"></td>
+                            <td class="text-end" th:text="'Q ' + ${#numbers.formatDecimal(detalle.precioUnitario, 1, 'COMMA', 2, 'POINT')}"></td>
+                            <td class="text-end" th:text="'Q ' + ${#numbers.formatDecimal(detalle.subtotal, 1, 'COMMA', 2, 'POINT')}"></td>
+                            <td class="text-end" th:text="${detalle.calcularPuntos()}"></td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr class="fw-bold">
+                            <td colspan="3" class="text-end">Total</td>
+                            <td class="text-end" th:text="'Q ' + ${#numbers.formatDecimal(pedido.total, 1, 'COMMA', 2, 'POINT')}"></td>
+                            <td class="text-end" th:text="${pedido.calcularPuntos()}"></td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5" th:if="${pedido.puedeCobrarse()}">
+            <div class="card tarjeta p-4">
+                <h2 class="h5 mb-3">Cobrar pedido</h2>
+                <form th:action="@{/pedidos/{id}/cobrar(id=${pedido.id})}" th:object="${pagoFormulario}" method="post" id="formularioPago">
+                    <div class="mb-3">
+                        <label class="form-label d-block">Método de pago</label>
+                        <div class="btn-group w-100" role="group">
+                            <th:block th:each="metodo : ${metodos}">
+                                <input type="radio" class="btn-check" th:field="*{metodo}" th:value="${metodo}" th:id="'metodo' + ${metodo}">
+                                <label class="btn btn-outline-secondary" th:for="'metodo' + ${metodo}" th:text="${metodo.descripcion}"></label>
+                            </th:block>
+                        </div>
+                    </div>
+                    <div class="seccion-efectivo">
+                        <label class="form-label" for="montoRecibido">Monto recibido (Q)</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="montoRecibido" th:field="*{montoRecibido}"
+                               th:attr="data-total=${pedido.total}">
+                        <div class="form-text">Cambio: <strong id="cambio">Q 0.00</strong></div>
+                    </div>
+                    <div class="seccion-tarjeta d-none">
+                        <div class="mb-2">
+                            <label class="form-label" for="titular">Titular</label>
+                            <input class="form-control" id="titular" th:field="*{titular}" autocomplete="cc-name">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label" for="numeroTarjeta">Número de tarjeta</label>
+                            <input class="form-control" id="numeroTarjeta" th:field="*{numeroTarjeta}" inputmode="numeric"
+                                   autocomplete="cc-number" placeholder="4111 1111 1111 1111">
+                        </div>
+                        <div class="form-text">Simulación: tarjetas válidas (Luhn) se aprueban; las que inician con 4000 se rechazan por fondos insuficientes.</div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <span>Total a cobrar <strong class="fs-5" th:text="'Q ' + ${#numbers.formatDecimal(pedido.total, 1, 'COMMA', 2, 'POINT')}"></strong></span>
+                        <button class="btn btn-primario" type="submit">Procesar pago</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragmentos/plantilla :: pie}"></footer>
+<th:block th:replace="~{fragmentos/plantilla :: scripts}"></th:block>
+<script th:src="@{/js/pago.js}"></script>
+</body>
+</html>

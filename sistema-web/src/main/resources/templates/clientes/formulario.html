@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos/plantilla :: cabecera(${formulario.id == null} ? 'Nuevo cliente' : 'Editar cliente')}"></head>
+<body>
+<nav th:replace="~{fragmentos/plantilla :: navegacion('clientes')}"></nav>
+<main class="container">
+    <div th:replace="~{fragmentos/plantilla :: mensajes}"></div>
+
+    <h1 class="h3 mb-3" th:text="${formulario.id == null} ? 'Registrar cliente' : 'Editar cliente'"></h1>
+
+    <div class="card tarjeta p-4" style="max-width: 720px">
+        <form th:action="${formulario.id == null} ? @{/clientes} : @{/clientes/{id}(id=${formulario.id})}"
+              th:object="${formulario}" method="post" novalidate>
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label" for="identificador">Identificador *</label>
+                    <input class="form-control" id="identificador" th:field="*{identificador}"
+                           th:classappend="${#fields.hasErrors('identificador')} ? 'is-invalid'" placeholder="CLI-1005">
+                    <div class="invalid-feedback" th:errors="*{identificador}"></div>
+                </div>
+                <div class="col-md-7">
+                    <label class="form-label" for="nombre">Nombre completo *</label>
+                    <input class="form-control" id="nombre" th:field="*{nombre}"
+                           th:classappend="${#fields.hasErrors('nombre')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{nombre}"></div>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label" for="telefono">Teléfono</label>
+                    <input class="form-control" id="telefono" th:field="*{telefono}"
+                           th:classappend="${#fields.hasErrors('telefono')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{telefono}"></div>
+                </div>
+                <div class="col-md-7">
+                    <label class="form-label" for="correo">Correo electrónico</label>
+                    <input type="email" class="form-control" id="correo" th:field="*{correo}"
+                           th:classappend="${#fields.hasErrors('correo')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:errors="*{correo}"></div>
+                </div>
+            </div>
+            <p class="text-muted small mt-3 mb-0" th:if="${formulario.id == null}">El cliente inicia con saldo de 0 puntos.</p>
+            <div class="d-flex gap-2 mt-4">
+                <button class="btn btn-primario" type="submit">Guardar</button>
+                <a class="btn btn-outline-secondary"
+                   th:href="${formulario.id == null} ? @{/clientes} : @{/clientes/{id}(id=${formulario.id})}">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</main>
+<footer th:replace="~{fragmentos/plantilla :: pie}"></footer>
+<th:block th:replace="~{fragmentos/plantilla :: scripts}"></th:block>
+</body>
+</html>
