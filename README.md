@@ -34,7 +34,9 @@ sistema-web contiene la aplicación organizada en modelo, repositorio, servicio,
 
 ## Datos de prueba
 
-Clientes CLI-1001, CLI-1002, CLI-1003 y CLI-1004 (inactivo)
+El script incluye la operación del restaurante de septiembre a noviembre de 2026 con 32 clientes, 27 productos, 290 pedidos y 46 canjes.
+
+Clientes del CLI-1001 al CLI-1032. Los clientes CLI-1004, CLI-1022 y CLI-1032 están inactivos.
 
 Tarjeta aprobada 4111 1111 1111 1111
 Tarjeta rechazada 4000 0000 0000 0002
